@@ -3,7 +3,7 @@ const User = require("../models/user.model");
 // Register a User
 exports.registerUser = async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const { name, email, photo } = req.body;
 
     const existingUser = await User.findOne({ email });
 
@@ -11,7 +11,8 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const newUser = await User.create({ name, email });
+    const newUser = new User({ name, email, img: photo });
+    await newUser.save();
 
     res.status(201).json({
       message: "User registered successfully",
