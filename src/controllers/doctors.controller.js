@@ -11,7 +11,7 @@ exports.addDoctor = async (req, res) => {
 
         const newDoctor = await Doctor.create({
             name,
-            date : dob || Date.now(), // Ensure date is handled properly
+            date: dob || Date.now(), // Ensure date is handled properly
             image,
             gender,
             specialty,
@@ -31,3 +31,14 @@ exports.addDoctor = async (req, res) => {
         });
     }
 };
+
+
+exports.getDoctor = async (req, res) => {
+    try {
+        const doctor = await Doctor.find();
+        res.status(200).json(doctor)
+    }
+    catch (err) {
+        res.status(500).json(err.message)
+    }
+}
