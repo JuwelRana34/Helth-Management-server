@@ -4,15 +4,12 @@ const User = require("../models/user.model");
 exports.registerUser = async (req, res) => {
   try {
     const { name, email, photo } = req.body;
-    console.log(name)
     const existingUser = await User.findOne({ email });
-
     if (existingUser) {
+       console.log("User already registered ");
       return res.send("Login successfully");
     }
-
-    const newUser = new User({ name, email, img: photo });
-    await newUser.save();
+    const newUser = await  User.create({ name, email, img: photo });
 
     res.status(201).json({
       message: "User registered successfully",
