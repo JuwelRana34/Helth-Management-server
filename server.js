@@ -5,6 +5,7 @@ const connectDB  = require("./src/config/db");
 const authRoutes = require("./src/routes/auth.routes");
 const User = require("./src/routes/data.routes");
 const Post = require("./src/routes/post.routes");
+const Doctor = require("./src/routes/doctors.routes")
 const Notification = require("./src/routes/notification.routes");
 
 
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api", User);
 app.use("/api", Post)
+app.use("/api", Doctor)
 app.use("/api", Notification)
 // Server Start ataurwd
 const PORT = process.env.PORT || 5000;
