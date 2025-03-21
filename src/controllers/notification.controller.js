@@ -3,7 +3,6 @@ const Notification = require("../models/notification.model");
 exports.postNofication = async function (req, res) {
   try {
     const { notification } = req.body;
-
     const newNotification = await Notification.create({
       message: notification,
     });
