@@ -10,7 +10,7 @@ const Post = require("./src/routes/post.routes");
 const Doctor = require("./src/routes/doctors.routes")
 const Notification = require("./src/routes/notification.routes");
 const Ai = require("./src/routes/ai.routes");
-const Ai = require("./src/routes/ai.routes");
+
 
 
 
