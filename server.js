@@ -2,8 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const http = require("http");
-const { Server } = require("socket.io");
 const cors = require("cors");
 const connectDB  = require("./src/config/db");
 const authRoutes = require("./src/routes/auth.routes");
@@ -12,7 +10,8 @@ const Post = require("./src/routes/post.routes");
 const Doctor = require("./src/routes/doctors.routes")
 const Notification = require("./src/routes/notification.routes");
 const Ai = require("./src/routes/ai.routes");
-const Ai = require("./src/routes/ai.routes");
+
+
 
 
 const app = express();
@@ -107,5 +106,4 @@ io.on("connection", (socket) => {
 
 // Server Start ataurwd
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
