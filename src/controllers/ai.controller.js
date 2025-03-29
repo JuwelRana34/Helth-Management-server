@@ -1,7 +1,6 @@
 const { OpenAI } = require("openai");
 exports.Ai = async function (req, res) {
     const text = req.body.Text;
-
     const baseURL = "https://api.aimlapi.com/v1";
     const apiKey = process.env.AI_KEY;
     try{
