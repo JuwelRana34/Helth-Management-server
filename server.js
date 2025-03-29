@@ -22,9 +22,6 @@ const io = new Server(server, {
     origin:[ "http://localhost:5173","https://healthcarebd2.netlify.app"],
         methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
    
-    origin:[ "http://localhost:5173","https://healthcarebd2.netlify.app"],
-        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
-   
     },
   });
 connectDB ();
