@@ -20,7 +20,7 @@ exports.Ai = async function (req, res) {
       },
     ],
     temperature: 0.7,
-    max_tokens: 256,
+    max_tokens: 220,
   });
 
       const mainResponse = response?.choices?.[0]?.message?.content;
