@@ -14,13 +14,13 @@ exports.Ai = async function (req, res) {
   const response = await  await api.chat.completions.create({
     model: "mistralai/Mistral-7B-Instruct-v0.2",
     messages: [
-      {
-        role: "user",
-        content: text,
-      },
+
+        { role: "system", content: "Your name is Sime. You are a virtual medical assistant. You provide only polite and professional responses related to medical information, basic first aid, and symptoms." },
+        { role: "user", content: `User request: ${text}. Generate a response for this request.` },
+  
     ],
     temperature: 0.7,
-    max_tokens: 256,
+    max_tokens: 220,
   });
 
       const mainResponse = response?.choices?.[0]?.message?.content;
