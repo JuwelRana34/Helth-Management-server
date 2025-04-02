@@ -5,6 +5,6 @@ const router = express.Router()
 router.post('/payment', postPayment)
 router.post('/payment-success', getPaymentSuccess)
 router.get('/verify-payment/:tran_id/:userID', verifyPayment)
-router.get('/payments', payments)
+router.get('/payments/:userid', payments)
 
 module.exports = router
