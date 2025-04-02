@@ -105,7 +105,6 @@ exports.verifyPayment = async function (req, res) {
         if(paddingPayments.length > 0){
            await Payment.deleteMany({ userId:userID, paymentStatus: "pending" });
         }
-     
       // Send email  user about successful payment {pending implementation}
 
       return res.status(200).json({ status:true, message: "payment verified " });
@@ -121,7 +120,6 @@ exports.verifyPayment = async function (req, res) {
 
 exports.payments = async function (req, res) {
   const {userid}= req.params
-
   try {
     const payments = await Payment.find({userId:userid}).populate("userId");
     return res.status(200).json(payments);

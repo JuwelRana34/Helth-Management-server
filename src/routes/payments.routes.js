@@ -1,6 +1,7 @@
 const express = require('express')
 const { postPayment,getPaymentSuccess,verifyPayment, payments}= require('../controllers/Payments.controller')
 
+
 const router = express.Router()
 router.post('/payment', postPayment)
 router.post('/payment-success', getPaymentSuccess)
