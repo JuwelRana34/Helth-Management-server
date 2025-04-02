@@ -1,11 +1,12 @@
 const Payment = require("../models/payments.model");
 const User = require("../models/user.model");
 const axios = require("axios");
+const { v4:uuidv4 } = require("uuid");
 
 exports.postPayment = async function (req, res) {
   try {
     const { cus_name, cus_email, cus_phone, userID ,amount,fail_url,cancel_url } = req.body;
-    const tran_id = "TXN_" + new Date().getTime();
+    const tran_id = "TXN_" + uuidv4().replace(/-/g, "").substring(0, 12);
     const paymentData = {
       store_id: process.env.Store_id,
       signature_key: process.env.Signature_key,
@@ -55,7 +56,7 @@ exports.postPayment = async function (req, res) {
 exports.getPaymentSuccess = async function (req, res) {
   try {
     const responseData = req.body;
-    const { mer_txnid, pay_status } = responseData;
+    const { mer_txnid, pay_status, card_type } = responseData;
 
     if (pay_status !== "Successful")
       return res.status(400).json({ error: "Transaction ID is required" });
@@ -66,6 +67,8 @@ exports.getPaymentSuccess = async function (req, res) {
 
    
     if (data?.pay_status === "Successful") {
+      await Payment.updateOne({ tran_id: mer_txnid }, { paymentMethod: card_type
+        });
         return res.redirect(`${process.env.frontend_redirectURl}/paymentSuccess?tran_id=${mer_txnid}`);
     } else {
         return res.status(400).json({ error: "Payment verification failed" });
@@ -97,9 +100,13 @@ exports.verifyPayment = async function (req, res) {
           { subscriptions: new Date(new Date().setDate(new Date().getDate()+ 2))},
           { new: true, runValidators: true } 
         );
-      await Payment.deleteMany({ userID, paymentStatus: "pending" });
+        const paddingPayments = await Payment.find({userId: userID})
+
+        if(paddingPayments.length > 0){
+           await Payment.deleteMany({ userId:userID, paymentStatus: "pending" });
+        }
       // Send email  user about successful payment {pending implementation}
-      
+
       return res.status(200).json({ status:true, message: "payment verified " });
     }
   } catch (err) {
@@ -112,8 +119,9 @@ exports.verifyPayment = async function (req, res) {
 };
 
 exports.payments = async function (req, res) {
+  const {userid}= req.params
   try {
-    const payments = await Payment.find();
+    const payments = await Payment.find({userId:userid}).populate("userId");
     return res.status(200).json(payments);
   } catch (error) {
     console.error("Payment Fetch Error:", error.message);
