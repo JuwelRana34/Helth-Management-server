@@ -10,6 +10,7 @@ const Post = require("./src/routes/post.routes");
 const Doctor = require("./src/routes/doctors.routes")
 const Notification = require("./src/routes/notification.routes");
 const Ai = require("./src/routes/ai.routes");
+const Payment = require("./src/routes/payments.routes");
 
 
 
@@ -31,7 +32,7 @@ app.use(cors(
     }  
 ))
 app.use(express.json());
-
+app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -40,6 +41,7 @@ app.use("/api", Post)
 app.use("/api", Doctor)
 app.use("/api", Notification)
 app.use("/api", Ai)
+app.use("/api", Payment)
 
 
 
