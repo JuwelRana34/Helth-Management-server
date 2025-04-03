@@ -11,19 +11,14 @@ const Doctor = require("./src/routes/doctors.routes")
 const Notification = require("./src/routes/notification.routes");
 const Ai = require("./src/routes/ai.routes");
 const Payment = require("./src/routes/payments.routes");
-
-
+const initializeSocket = require("./src/utils/socket");
 
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-    origin:[ "http://localhost:5173","https://healthcarebd2.netlify.app"],
-        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
-   
-    },
-  });
+// Initialize Socket.io
+const io = initializeSocket(server);
+
 connectDB ();
 // Middleware
 app.use(cors(
@@ -43,68 +38,6 @@ app.use("/api", Notification)
 app.use("/api", Ai)
 app.use("/api", Payment)
 
-
-
-
-// Socket.io
-const ADMIN_EMAIL = "rk370613@gmail.com"; // Hardcoded Admin Email
-let users = {}; // Store users with socket IDs
-let activeUsers = []; // Store active users with name & photo
-let adminSocket = null;
-let messages = {};
-
-io.on("connection", (socket) => {
-  socket.on("userJoined", (user) => {
-    users[user.email] = { id: socket.id, name: user.name, photo: user.photo };
-
-    if (!activeUsers.some((u) => u.email === user.email)) {
-      activeUsers.push(user);
-    }
-
-    io.emit("updateActiveUsers", activeUsers);
-
-    if (user.email === ADMIN_EMAIL) {
-      adminSocket = socket.id;
-    }
-  });
-
-  socket.on("sendMessageToAdmin", ({ sender, message }) => {
-    if (!messages[sender]) {
-      messages[sender] = [];
-    }
-    messages[sender].push({ sender, message });
-
-    if (adminSocket) {
-      io.to(adminSocket).emit("newMessage", { sender });
-    } else {
-      console.log("Admin is not online");
-    }
-  });
-
-  socket.on("selectUser", (userEmail) => {
-    if (messages[userEmail]) {
-      io.to(adminSocket).emit("loadMessages", messages[userEmail]);
-    } else {
-      io.to(adminSocket).emit("loadMessages", []);
-    }
-  });
-
-  socket.on("sendMessageToUser", ({ receiver, message }) => {
-    if (!messages[receiver]) {
-      messages[receiver] = [];
-    }
-    messages[receiver].push({ sender: ADMIN_EMAIL, message });
-
-    if (users[receiver]) {
-      io.to(users[receiver].id).emit("receiveMessage", { sender: ADMIN_EMAIL, message });
-    }
-  });
-
-  socket.on("disconnect", () => {
-    activeUsers = activeUsers.filter((u) => u.email !== users[socket.id]?.email);
-    io.emit("updateActiveUsers", activeUsers);
-  });
-});
 
 // Server Start ataurwd
 const PORT = process.env.PORT || 5000;
