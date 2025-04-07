@@ -43,6 +43,17 @@ exports.getDoctor = async (req, res) => {
     }
 }
 
+
+exports.getDoctor = async (req, res) => {
+    try {
+        const doctor = await Doctor.find();
+        res.status(200).json(doctor)
+    }
+    catch (err) {
+        res.status(500).json(err.message)
+    }
+}
+
 exports.deleteDoctor = async(req, res) =>{
     const {id }= req.params
 
