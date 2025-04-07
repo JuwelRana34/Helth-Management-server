@@ -6,6 +6,7 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     img : {type : String},
     role: { type: String, default: "patient" },
+    subscriptions: { type: Date, default: Date.now},
     
   },
   { timestamps: true }

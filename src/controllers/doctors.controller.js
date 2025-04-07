@@ -42,3 +42,26 @@ exports.getDoctor = async (req, res) => {
         res.status(500).json(err.message)
     }
 }
+
+
+exports.getDoctor = async (req, res) => {
+    try {
+        const doctor = await Doctor.find();
+        res.status(200).json(doctor)
+    }
+    catch (err) {
+        res.status(500).json(err.message)
+    }
+}
+
+exports.deleteDoctor = async(req, res) =>{
+    const {id }= req.params
+
+    try {
+        await Doctor.findByIdAndDelete(id)
+        res.status(200).json({ message: "Doctor deleted successfully" });
+        
+    } catch (error) {
+        res.status(500).json(error.message)
+    }
+}
