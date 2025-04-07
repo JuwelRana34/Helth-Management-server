@@ -3,18 +3,32 @@ const User = require("../models/user.model");
 const axios = require("axios");
 const { v4: uuidv4 } = require("uuid");
 const sendConfirmationEmail = require("../utils/sendEmail");
+const { subscribe } = require("../routes/auth.routes");
 
 exports.postPayment = async function (req, res) {
   try {
     const {
+      plan,
       cus_name,
       cus_email,
       cus_phone,
       userID,
-      amount,
       fail_url,
       cancel_url,
     } = req.body;
+
+    let amount = 0;
+
+    if (plan === "basic") {
+      amount = 100;
+    } else if (plan === "starter") {
+      amount = 200;
+    } else if (plan === "premium") {
+      amount = 300;
+    } else {
+      return res.status(400).json({ error: "Invalid plan selected" });
+    }
+
     const tran_id = "TXN_" + uuidv4().replace(/-/g, "").substring(0, 12);
     const paymentData = {
       store_id: process.env.Store_id,
@@ -22,9 +36,9 @@ exports.postPayment = async function (req, res) {
       cus_name,
       cus_email,
       cus_phone,
-      amount: 100, //need to verify with mongodb
+      amount, //need to verify with mongodb
       currency: "BDT",
-      tran_id: tran_id,
+      tran_id,
       desc: "test transaction",
       success_url: `${process.env.backend_url}/api/payment-success`,
       fail_url,
@@ -33,13 +47,13 @@ exports.postPayment = async function (req, res) {
     };
 
     await Payment.create({
-      tran_id: tran_id,
-      amount: amount,
+      tran_id,
+      plan,
+      amount,
       paymentStatus: "pending",
       request_id: tran_id,
       userId: userID,
     });
-    // Ensure amount verification from DB (You should do this before processing)
 
     const { data } = await axios.post(
       "https://sandbox.aamarpay.com/jsonpost.php",
@@ -68,7 +82,7 @@ exports.getPaymentSuccess = async function (req, res) {
     const { mer_txnid, pay_status, card_type } = responseData;
 
     if (pay_status !== "Successful")
-      return res.status(400).json({ error: "Transaction ID is required" });
+      return res.status(400).json({ error: " payment not successful" });
 
     const url = `https://sandbox.aamarpay.com/api/v1/trxcheck/request.php?request_id=${mer_txnid}&store_id=${process.env.Store_id}&signature_key=${process.env.Signature_key}&type=json`;
 
@@ -102,24 +116,55 @@ exports.verifyPayment = async function (req, res) {
 
     const url = `https://sandbox.aamarpay.com/api/v1/trxcheck/request.php?request_id=${tran_id}&store_id=${process.env.Store_id}&signature_key=${process.env.Signature_key}&type=json`;
 
+    //  verifyPayment 
     const { data } = await axios.get(url);
 
     if (data?.pay_status === "Successful") {
+      const paymentRecord = await Payment.findOne({ tran_id });
+      if (!paymentRecord) {
+        return res.status(404).json({ error: "Payment record not found" });
+      }
+      const planDetails = {
+        basic: { validity: 7, ticket: 3, plan: "basic" },
+        starter: { validity: 25, ticket: 7, plan: "starter" },
+        premium: { validity: 30, ticket: 13, plan: "premium" },
+      };
+      const { validity, ticket, plan } = planDetails[paymentRecord.plan];
+
       await Payment.updateOne({ tran_id }, { paymentStatus: "paid" });
-      await User.findByIdAndUpdate(
+
+      //  check subscribetion validity 
+      const user = await User.findById(userID);
+      let newSubscriptionEndDate;
+
+      if (user.subscriptions && new Date(user.subscriptions) > Date.now()) {
+        newSubscriptionEndDate = new Date(user.subscriptions.getTime() + validity * 24 * 60 * 60 * 1000);
+      } else { 
+        newSubscriptionEndDate = new Date(Date.now() + validity * 24 * 60 * 60 * 1000);
+      }
+
+      const userUpdateResult = await User.findByIdAndUpdate(
         userID,
         {
-          subscriptions: new Date(new Date().setDate(new Date().getDate() + 2)),
+          subscriptions: newSubscriptionEndDate,
+          $inc: { ticket },
+          subscriptionPlan: plan,
         },
         { new: true, runValidators: true }
       );
+
+      if (!userUpdateResult) {
+        return res
+          .status(500)
+          .json({ error: "Failed to update user subscription" });
+      }
+
       const paddingPayments = await Payment.find({ userId: userID });
 
       if (paddingPayments.length > 0) {
         await Payment.deleteMany({ userId: userID, paymentStatus: "pending" });
       }
 
-      const PaymentInfo = await Payment.findOne({ tran_id });
       const userInfo = await User.findById(userID);
 
       const mailOptions = {
@@ -128,39 +173,50 @@ exports.verifyPayment = async function (req, res) {
         subject: "🧾 Payment Confirmation  Health Care",
         html: `
           <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f6f8;">
-            <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-              <div style="background-color: #00796b; padding: 20px; text-align: center;">
-                <img src="https://cdn-icons-png.flaticon.com/128/4326/4326328.png" alt="Health Care" style="height: 50px;" />
-                <h2 style="color: #ffffff; margin-top: 10px;">Payment Confirmation</h2>
-              </div>
-              <div style="padding: 30px;">
-                <p style="font-size: 16px; color: #333333;">Dear ${
-                  userInfo.name || "Customer"
-                },</p>
-                <p style="font-size: 16px; color: #333333;">
-                  Thank you for your payment. We have successfully received your payment and your transaction has been confirmed.
-                </p>
-                <hr style="margin: 20px 0;" />
-                <p style="font-size: 16px; color: #333333;"><strong>Transaction ID:</strong> ${
-                  PaymentInfo.tran_id
-                }</p>
-                <p style="font-size: 16px; color: #333333;"><strong>Amount:</strong> ${
-                  PaymentInfo.amount
-                } BDT</p>
-                <hr style="margin: 20px 0;" />
-                <p style="font-size: 14px; color: #666666;">
-                  If you have any questions, feel free to contact our support team.
-                </p>
-                <p style="font-size: 14px; color: #666666;">Thank you for choosing <strong>Health Care</strong>.</p>
-              </div>
-              <div style="background-color: #f1f1f1; text-align: center; padding: 15px; font-size: 13px; color: #999;">
-                © ${new Date().getFullYear()} Health Care. All rights reserved.
-              </div>
-            </div>
-          </div>
-        `,
-      };
+  <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+    
+    <!-- Header -->
+    <div style="background-color: #00796b; padding: 20px; text-align: center;">
+      <img src="https://cdn-icons-png.flaticon.com/128/4326/4326328.png" alt="Health Care" style="height: 50px;" />
+      <h2 style="color: #ffffff; margin-top: 10px;">Payment Confirmation</h2>
+    </div>
 
+    <!-- Body -->
+    <div style="padding: 30px;">
+      <p style="font-size: 16px; color: #333333;">Dear ${userInfo.name || 'Customer'},</p>
+      <p style="font-size: 16px; color: #333333;">
+        Thank you for your payment. We have successfully received your payment and your transaction has been confirmed.
+      </p>
+
+      <hr style="margin: 20px 0;" />
+
+      <p style="font-size: 16px; color: #333333;"><strong>Transaction ID:</strong> ${paymentRecord.tran_id}</p>
+      <p style="font-size: 16px; color: #333333;"><strong>Amount Paid:</strong> ${paymentRecord.amount} BDT</p>
+      <p style="font-size: 16px; color: #333333;"><strong>Plan:</strong>${plan}</p>
+      <p style="font-size: 16px; color: #333333;"><strong>Ticket(s):</strong> ${ticket}</p>
+      <p style="font-size: 16px; color: #333333;"><strong>Validity:</strong> ${validity} days</p>
+
+      <hr style="margin: 20px 0;" />
+
+      <p style="font-size: 14px; color: #666666;">
+        If you have any questions, feel free to contact our support team.
+      </p>
+      <p style="font-size: 14px; color: #666666;">
+        Thank you for choosing <strong>Health Care</strong>.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="background-color: #f1f1f1; text-align: center; padding: 15px; font-size: 13px; color: #999;">
+      © ${new Date().getFullYear()} Health Care. All rights reserved.
+    </div>
+  </div>
+</div> `,
+ };
+       
+     
+
+      // confirMation Email Send
       await sendConfirmationEmail(mailOptions);
 
       return res

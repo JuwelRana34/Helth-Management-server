@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const paymentSchema = new mongoose.Schema({
   tran_id: { type: String, required: true },
+  plan: { type: String, required: true },
   amount: { type: Number, required: true },
   paymentMethod: { type: String },
   paymentStatus: { type: String, required: true, enum: ["pending", "paid"] },
