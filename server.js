@@ -12,12 +12,13 @@ const Notification = require("./src/routes/notification.routes");
 const Ai = require("./src/routes/ai.routes");
 const Payment = require("./src/routes/payments.routes");
 const initializeSocket = require("./src/utils/socket");
+const contact = require('./src/routes/contact.routes');
 
 
 const app = express();
 const server = http.createServer(app);
 // Initialize Socket.io
-const io = initializeSocket(server);
+initializeSocket(server);
 
 connectDB ();
 // Middleware
@@ -37,6 +38,7 @@ app.use("/api", Doctor)
 app.use("/api", Notification)
 app.use("/api", Ai)
 app.use("/api", Payment)
+app.use("/api", contact)
 
 
 // Server Start ataurwd
