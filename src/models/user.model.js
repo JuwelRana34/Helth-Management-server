@@ -6,8 +6,9 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     img : {type : String},
     role: { type: String, default: "patient" },
-    subscriptions: { type: Date, default: Date.now},
-    
+    subscriptions: { type: Date,},
+    ticket:{type:Number , default:0},
+    subscriptionPlan: { type: String, default: "basic" }
   },
   { timestamps: true }
 );
