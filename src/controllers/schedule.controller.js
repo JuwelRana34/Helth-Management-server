@@ -42,9 +42,9 @@ exports.getBookedSchedule = async (req, res) => {
 
 exports.bookSchedule = async (req, res) => {
   const { doctorId, userId, date, time } = req.body;
-
   const schedule = await Schedule.findOne({ doctorId, date });
-  const doctor = Doctor.findById(doctorId)
+  const doctor = await Doctor.findById(doctorId)
+
   if (!schedule) return res.status(404).json({ msg: "Schedule not found" });
 
   const slot = schedule.slots.find((s) => s.time === time);
@@ -75,7 +75,7 @@ exports.bookSchedule = async (req, res) => {
       await User.findByIdAndUpdate(
         userId,
         {
-          $inc: { ticket: -1 } // 👈 fix: subtract 1, don't use `ticket - 1`
+          $inc: { ticket: -1 }
         },
         { new: true, runValidators: true }
       );
@@ -131,7 +131,6 @@ exports.bookSchedule = async (req, res) => {
           <hr style="margin: 20px 0;" />
   
           <p style="font-size: 16px; color: #333333;"><strong>Plan:</strong> ${user.subscriptionPlan}</p>
-          <p style="font-size: 16px; color: #333333;"><strong>Tickets Used:</strong> 1</p>
           <p style="font-size: 16px; color: #333333;"><strong>Remaining Tickets:</strong> ${user.ticket}</p>
           <p style="font-size: 16px; color: #333333;"><strong>Plan Valid Until:</strong> ${user.subscriptionPlan === 'basic'? " unlimited" : user.subscriptions}</p>
   
