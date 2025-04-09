@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
+require('./src/utils/scheduleCron');
 const http = require("http");
-const { Server } = require("socket.io");
 const cors = require("cors");
 const connectDB  = require("./src/config/db");
 const authRoutes = require("./src/routes/auth.routes");
@@ -13,6 +13,7 @@ const Ai = require("./src/routes/ai.routes");
 const Payment = require("./src/routes/payments.routes");
 const initializeSocket = require("./src/utils/socket");
 const contact = require('./src/routes/contact.routes');
+const schedule = require('./src/routes/schedule.routes');
 
 
 const app = express();
@@ -39,6 +40,7 @@ app.use("/api", Notification)
 app.use("/api", Ai)
 app.use("/api", Payment)
 app.use("/api", contact)
+app.use("/api", schedule)
 
 
 // Server Start ataurwd

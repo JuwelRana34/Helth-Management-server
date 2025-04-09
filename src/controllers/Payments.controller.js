@@ -3,7 +3,7 @@ const User = require("../models/user.model");
 const axios = require("axios");
 const { v4: uuidv4 } = require("uuid");
 const sendConfirmationEmail = require("../utils/sendEmail");
-const { subscribe } = require("../routes/auth.routes");
+
 
 exports.postPayment = async function (req, res) {
   try {
@@ -20,11 +20,11 @@ exports.postPayment = async function (req, res) {
     let amount = 0;
 
     if (plan === "basic") {
-      amount = 100;
-    } else if (plan === "starter") {
-      amount = 200;
+      amount = 7000;
     } else if (plan === "premium") {
-      amount = 300;
+      amount = 30000;
+    } else if (plan === "family") {
+      amount = 120000;
     } else {
       return res.status(400).json({ error: "Invalid plan selected" });
     }
@@ -36,7 +36,7 @@ exports.postPayment = async function (req, res) {
       cus_name,
       cus_email,
       cus_phone,
-      amount, //need to verify with mongodb
+      amount, 
       currency: "BDT",
       tran_id,
       desc: "test transaction",
@@ -125,9 +125,9 @@ exports.verifyPayment = async function (req, res) {
         return res.status(404).json({ error: "Payment record not found" });
       }
       const planDetails = {
-        basic: { validity: 7, ticket: 3, plan: "basic" },
-        starter: { validity: 25, ticket: 7, plan: "starter" },
-        premium: { validity: 30, ticket: 13, plan: "premium" },
+        basic: { validity:30, ticket:10, plan: "basic" },
+        premium: { validity:365, ticket: 0, plan: "premium" },
+        family: { validity: 365, ticket: 0, plan: "family" },
       };
       const { validity, ticket, plan } = planDetails[paymentRecord.plan];
 
@@ -183,15 +183,21 @@ exports.verifyPayment = async function (req, res) {
 
     <!-- Body -->
     <div style="padding: 30px;">
-      <p style="font-size: 16px; color: #333333;">Dear ${userInfo.name || 'Customer'},</p>
+      <p style="font-size: 16px; color: #333333;">Dear ${
+        userInfo.name || "Customer"
+      },</p>
       <p style="font-size: 16px; color: #333333;">
         Thank you for your payment. We have successfully received your payment and your transaction has been confirmed.
       </p>
 
       <hr style="margin: 20px 0;" />
 
-      <p style="font-size: 16px; color: #333333;"><strong>Transaction ID:</strong> ${paymentRecord.tran_id}</p>
-      <p style="font-size: 16px; color: #333333;"><strong>Amount Paid:</strong> ${paymentRecord.amount} BDT</p>
+      <p style="font-size: 16px; color: #333333;"><strong>Transaction ID:</strong> ${
+        paymentRecord.tran_id
+      }</p>
+      <p style="font-size: 16px; color: #333333;"><strong>Amount Paid:</strong> ${
+        paymentRecord.amount
+      } BDT</p>
       <p style="font-size: 16px; color: #333333;"><strong>Plan:</strong>${plan}</p>
       <p style="font-size: 16px; color: #333333;"><strong>Ticket(s):</strong> ${ticket}</p>
       <p style="font-size: 16px; color: #333333;"><strong>Validity:</strong> ${validity} days</p>
@@ -212,7 +218,7 @@ exports.verifyPayment = async function (req, res) {
     </div>
   </div>
 </div> `,
- };
+      };
        
      
 
