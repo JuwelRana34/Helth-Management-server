@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
+require('./src/utils/scheduleCron');
 const http = require("http");
-const { Server } = require("socket.io");
 const cors = require("cors");
 const connectDB  = require("./src/config/db");
 const authRoutes = require("./src/routes/auth.routes");
