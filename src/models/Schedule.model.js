@@ -1,18 +1,31 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const ScheduleSchema = new mongoose.Schema(
-  {
-    doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "Doctor", required: true },
-    date: { type: Date, required: true },
-    timeSlots: [
-      {
-        startTime: { type: String, required: true },
-        endTime: { type: String, required: true },
-        isBooked: { type: Boolean, default: false },
-      },
-    ],
+const DoctorScheduleSchema = new mongoose.Schema({
+  doctorId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Doctor", 
+    required: true 
   },
-  { timestamps: true }
-);
+  date: { 
+    type: Date, // Changed to Date type for better querying and comparisons
+    required: true 
+  }, 
+  slots: [
+    {
+      time: { 
+        type: String, 
+        required: true 
+      }, 
+      bookedUsers: [{ 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "User" 
+      }],
+      maxBookings: { 
+        type: Number, 
+        default: 30 
+      },
+    },
+  ],
+});
 
-module.exports = mongoose.model("Schedule", ScheduleSchema);
+module.exports = mongoose.model('Schedule', DoctorScheduleSchema);
