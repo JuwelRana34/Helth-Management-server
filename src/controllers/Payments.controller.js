@@ -16,7 +16,6 @@ exports.postPayment = async function (req, res) {
       fail_url,
       cancel_url,
     } = req.body;
-
     let amount = 0;
 
     if (plan === "basic") {
@@ -240,6 +239,10 @@ exports.verifyPayment = async function (req, res) {
 
 exports.payments = async function (req, res) {
   const { userid } = req.params;
+   const user = await User.findById(userid)
+   if(user.email !== req.user.email){
+    return res.status(404).json({message:" unauthorize access"})
+   }
   try {
     const payments = await Payment.find({ userId: userid }).populate("userId");
     return res.status(200).json(payments);
