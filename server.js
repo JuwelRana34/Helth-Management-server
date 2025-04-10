@@ -15,7 +15,7 @@ const initializeSocket = require("./src/utils/socket");
 const contact = require('./src/routes/contact.routes');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser')
-
+const schedule = require('./src/routes/schedule.routes');
 
 
 const app = express();
@@ -44,7 +44,6 @@ app.use(
   // ✅ Middleware to verify JWT token
   const verifyToken = (req, res, next) => {
     const token = req.cookies.token;
-  
     if (!token) {
       return res.status(401).send({ message: 'unauthorized access' });
     }
@@ -62,7 +61,7 @@ app.use(
   // ✅ JWT Issuer Endpoint
   app.post('/jwt', async (req, res) => {
     const user = req.body;
-  
+
     // You can add extra validation here if needed
   
     const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
@@ -94,14 +93,14 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api", User);
 app.use("/api", Post)
-app.use("/api",verifyToken, Doctor)
+app.use("/api", Doctor)
 app.use("/api", Notification)
 app.use("/api", Ai)
-app.use("/api", Payment)
+app.use("/api",verifyToken, Payment)
 app.use("/api", contact)
+app.use("/api", verifyToken, schedule)
 
 
-
-// Server Start ataurwd
+// Server Start
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

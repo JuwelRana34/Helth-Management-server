@@ -16,7 +16,6 @@ exports.postPayment = async function (req, res) {
       fail_url,
       cancel_url,
     } = req.body;
-
     let amount = 0;
 
     if (plan === "basic") {
@@ -125,7 +124,7 @@ exports.verifyPayment = async function (req, res) {
         return res.status(404).json({ error: "Payment record not found" });
       }
       const planDetails = {
-        basic: { validity:30, ticket:10, plan: "basic" },
+        basic: { validity:0, ticket:10, plan: "basic" },
         premium: { validity:365, ticket: 0, plan: "premium" },
         family: { validity: 365, ticket: 0, plan: "family" },
       };
@@ -166,6 +165,10 @@ exports.verifyPayment = async function (req, res) {
       }
 
       const userInfo = await User.findById(userID);
+      
+      const ticketHtml = userInfo.subscriptionPlan === "basic" 
+  ? `<p style="font-size: 16px; color: #333333;"><strong>Ticket(s):</strong> ${ticket}</p>`
+  : `<p style="font-size: 16px; color: #333333;"><strong>Validity Till:</strong> ${userInfo.subscriptions} days</p>`;
 
       const mailOptions = {
         from: '"Health Care" <rk370613@gmail.com>',
@@ -199,9 +202,7 @@ exports.verifyPayment = async function (req, res) {
         paymentRecord.amount
       } BDT</p>
       <p style="font-size: 16px; color: #333333;"><strong>Plan:</strong>${plan}</p>
-      <p style="font-size: 16px; color: #333333;"><strong>Ticket(s):</strong> ${ticket}</p>
-      <p style="font-size: 16px; color: #333333;"><strong>Validity:</strong> ${validity} days</p>
-
+      ${ ticketHtml}
       <hr style="margin: 20px 0;" />
 
       <p style="font-size: 14px; color: #666666;">
@@ -220,8 +221,6 @@ exports.verifyPayment = async function (req, res) {
 </div> `,
       };
        
-     
-
       // confirMation Email Send
       await sendConfirmationEmail(mailOptions);
 
@@ -240,6 +239,10 @@ exports.verifyPayment = async function (req, res) {
 
 exports.payments = async function (req, res) {
   const { userid } = req.params;
+   const user = await User.findById(userid)
+   if(user.email !== req.user.email){
+    return res.status(404).json({message:" unauthorize access"})
+   }
   try {
     const payments = await Payment.find({ userId: userid }).populate("userId");
     return res.status(200).json(payments);
