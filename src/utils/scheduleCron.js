@@ -9,55 +9,55 @@ const timeSlots = [
   '08:00 PM - 10:00 PM'
 ];
 
+// This function contains your scheduling logic
+const runScheduleJob = async () => {
+  try {
+    const today = moment().startOf('day');
 
-// ⏱️ Cron job: runs daily at midnight
-const scheduleJob = new CronJob(
-  '0 0 * * *',
-  async ()=>{
-    try {
-      const today = moment().startOf('day');
-  
-      // 🗑️ Delete all past schedules
-      await Schedule.deleteMany({ date: { $lt: today.format('YYYY-MM-DD') } });
-  
-      const doctors = await Doctor.find();
-  
-      for (let day = 0; day <= 7; day++) {
-        const targetDate = moment(today).add(day, 'days').format('YYYY-MM-DD');
-  
-        for (const doctor of doctors) {
-          const exists = await Schedule.findOne({
+    // Delete past schedules
+    await Schedule.deleteMany({ date: { $lt: today.format('YYYY-MM-DD') } });
+
+    const doctors = await Doctor.find();
+
+    for (let day = 0; day <= 7; day++) {
+      const targetDate = moment(today).add(day, 'days').format('YYYY-MM-DD');
+
+      for (const doctor of doctors) {
+        const exists = await Schedule.findOne({
+          doctorId: doctor._id,
+          date: targetDate
+        });
+
+        if (!exists) {
+          await Schedule.create({
             doctorId: doctor._id,
-            date: targetDate
+            date: targetDate,
+            slots: timeSlots.map(time => ({
+              time,
+              bookedUsers: [],
+              maxBookings: 30
+            }))
           });
-  
-          if (!exists) {
-            await Schedule.create({
-              doctorId: doctor._id,
-              date: targetDate,
-              slots: timeSlots.map(time => ({
-                time,
-                bookedUsers: [],
-                maxBookings: 30
-              }))
-            });
-            console.log(`✅ Schedule added for Doctor ${doctor._id} on ${targetDate}`);
-          }
+          console.log(`✅ Schedule added for Doctor ${doctor._id} on ${targetDate}`);
         }
       }
-  
-      console.log(`✅ Schedule sync complete for ${today.format('YYYY-MM-DD')} to ${moment(today).add(7, 'days').format('YYYY-MM-DD')}`);
-    } catch (error) {
-      console.error('❌ Error in schedule job:', error);
     }
-  },
+
+    console.log(`✅ Schedule sync complete for ${today.format('YYYY-MM-DD')} to ${moment(today).add(7, 'days').format('YYYY-MM-DD')}`);
+  } catch (error) {
+    console.error('❌ Error in schedule job:', error);
+  }
+};
+
+// Define the cron job and export it (optional use)
+const scheduleJob = new CronJob(
+  '0 0 * * *', // Every day at midnight
+  runScheduleJob,
   null,
-  true,
+  false, // Don't auto-start
   'Asia/Dhaka'
 );
 
-scheduleJob.start(); // Auto start
-
-
-
-
+module.exports = {
+  runScheduleJob
+};
