@@ -11,7 +11,7 @@ exports.addDoctor = async (req, res) => {
 
         const newDoctor = await Doctor.create({
             name,
-            date: dob || Date.now(), // Ensure date is handled properly
+            dob: dob || Date.now(), // Ensure date is handled properly
             image,
             gender,
             specialty,
