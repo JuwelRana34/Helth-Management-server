@@ -251,3 +251,52 @@ exports.payments = async function (req, res) {
     return res.status(500).json({ error: "Failed to fetch payments" });
   }
 };
+exports.Allpayments = async function (req, res) {
+
+  //  if(user.email !== req.user.email){
+  //   return res.status(404).json({message:" unauthorize access"})
+  //  }
+  try {
+    const payments = await Payment.aggregate([
+     { $match: {
+        paymentStatus: "paid"
+      }
+    },
+    {
+      $addFields: {
+        userIdObj: { $toObjectId: "$userId" } // Convert string to ObjectId
+      }
+    },
+      {
+        $lookup: {
+          from: "users",            // Name of the users collection
+          localField: "userIdObj",     // Field in the transactions collection
+          foreignField: "_id",      // Field in the users collection
+          as: "userInfo"            // Alias for the joined user data
+        }
+      },
+      {
+        $unwind: "$userInfo"        // Converts array to object (if you want individual user objects)
+      },
+      {
+        $project: {
+          _id: 1,
+          tran_id: 1,
+          amount: 1,
+          paymentStatus: 1,
+          paymentMethod: 1,
+          createdAt: 1,
+          "userInfo.name": 1,
+          "userInfo.email": 1,
+          "userInfo.role": 1
+          // Include any other user fields you want
+        }
+      }
+
+    ])
+    return res.status(200).json(payments);
+  } catch (error) {
+    console.error("Payment Fetch Error:", error.message);
+    return res.status(500).json({ error: "Failed to fetch payments" });
+  }
+};
