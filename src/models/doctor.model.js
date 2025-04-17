@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const DoctorSchema = new mongoose.Schema(
     {
         name: { type: String, required: true },
-        date: { type: Date, default: Date.now },
+        dob: { type: Date,  },
         image: { type: String, required: true },
         gender: { type: String, required: true },
         specialty: { type: String, required: true }, // Doctor's specialization

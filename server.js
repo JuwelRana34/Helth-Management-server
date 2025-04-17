@@ -18,6 +18,7 @@ const cookieParser = require('cookie-parser')
 const schedule = require('./src/routes/schedule.routes');
 const { verifyToken } = require("./src/utils/jwt");
 const Schedule= require("./src/models/Schedule.model");
+const booked = require('./src/routes/bookedDoctor.route')
 
 
 const app = express();
@@ -97,6 +98,7 @@ app.use(
   });
 
 // Routes
+app.use("/api", booked)
 app.use("/api/auth", authRoutes);
 app.use("/api", User);
 app.use("/api", Post)
@@ -106,6 +108,7 @@ app.use("/api", Ai)
 app.use("/api",verifyToken, Payment)
 app.use("/api", contact)
 app.use("/api",verifyToken, schedule)
+
 
 
 
