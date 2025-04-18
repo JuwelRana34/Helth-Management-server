@@ -39,6 +39,30 @@ exports.getBookedSchedule = async (req, res) => {
 
   res.json(userBookings);
 };
+exports.getALLBookedSchedule = async (req, res) => {
+  try {
+    const schedules = await Schedule.find({})
+      .populate('doctorId')
+      .populate('slots.bookedUsers');
+
+    // Filter out slots with no booked users
+    const filteredSchedules = schedules.map(schedule => {
+      const filteredSlots = schedule.slots.filter(slot => 
+        slot.bookedUsers && slot.bookedUsers.length > 0
+      );
+      return {
+        ...schedule.toObject(),
+        slots: filteredSlots,
+      };
+    }).filter(schedule => schedule.slots.length > 0); // remove schedules with no booked slots
+
+    res.status(200).json(filteredSchedules);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to fetch booked schedules' });
+  }
+};
+
 
 exports.bookSchedule = async (req, res) => {
   const { doctorId, userId, date, time } = req.body;

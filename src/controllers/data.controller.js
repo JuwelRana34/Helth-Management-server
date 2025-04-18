@@ -61,3 +61,8 @@ exports.DeleteUser = async function (req, res) {
   }
 
 };
+exports.AllDetais = async function (req, res) {
+ 
+  // const allDetails = Ueser.aggrigate
+
+};
