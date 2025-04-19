@@ -38,6 +38,9 @@ app.use(
     })
   );
 
+  app.get('/api/wake-up', (req, res) => {
+    res.status(200).send('Server is awake!');
+  });
   app.get("/api/auto-cron", async(req , res)=>{
    await runScheduleJob()
    res.send("success")
