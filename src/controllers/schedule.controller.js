@@ -21,6 +21,7 @@ exports.getBookedSchedule = async (req, res) => {
   })
     .populate('doctorId', 'name')
     .exec();
+    
 
   const userBookings = [];
 
@@ -30,12 +31,12 @@ exports.getBookedSchedule = async (req, res) => {
         userBookings.push({
           date: schedule.date,
           time: slot.time,
+          user: slot.bookedUsers.find(id => id.equals(objectUserId)),
           doctorName: schedule.doctorId.name
         });
       }
     });
   });
-
 
   res.json(userBookings);
 };
