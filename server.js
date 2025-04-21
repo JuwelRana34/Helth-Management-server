@@ -85,7 +85,6 @@ app.use(
 // Routes
 app.use("/api", booked)
 app.use("/api/auth", authRoutes);
-app.use("/api",verifyToken, User);
 app.use("/api", Post)
 app.use("/api", Doctor)
 app.use("/api", Notification)
@@ -93,6 +92,7 @@ app.use("/api", Ai)
 app.use("/api",verifyToken, Payment)
 app.use("/api", contact)
 app.use("/api",verifyToken, schedule)
+app.use("/api",verifyToken, User);
 
 
 
