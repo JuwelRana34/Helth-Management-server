@@ -67,9 +67,11 @@ exports.getALLBookedSchedule = async (req, res) => {
 
 exports.bookSchedule = async (req, res) => {
   const { doctorId, userId, date, time } = req.body;
+  if (!doctorId || !userId || !date || !time) {
+    return res.status(400).json({ msg: "doctorId, userId, date and time are required" });
+  }
   const schedule = await Schedule.findOne({ doctorId, date });
   const doctor = await Doctor.findById(doctorId)
-
   if (!schedule) return res.status(404).json({ msg: "Schedule not found" });
 
   const slot = schedule.slots.find((s) => s.time === time);
