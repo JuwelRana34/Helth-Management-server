@@ -17,7 +17,6 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser')
 const schedule = require('./src/routes/schedule.routes');
 const { verifyToken } = require("./src/utils/jwt");
-const Schedule= require("./src/models/Schedule.model");
 const booked = require('./src/routes/bookedDoctor.route')
 
 
@@ -39,6 +38,9 @@ app.use(
     })
   );
 
+  app.get('/api/wake-up', (req, res) => {
+    res.status(200).send('Server is awake!');
+  });
   app.get("/api/auto-cron", async(req , res)=>{
    await runScheduleJob()
    res.send("success")
@@ -47,23 +49,6 @@ app.use(
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
-  
-  
-  // ✅ Middleware to verify JWT token
-  // const verifyToken = (req, res, next) => {
-  //   const token = req.cookies.token;
-  //   if (!token) {
-  //     return res.status(401).send({ message: 'unauthorized access' });
-  //   }
-  
-  //   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-  //     if (err) {
-  //       return res.status(403).send({ message: 'forbidden access' }); // changed 401 to 403 for expired/invalid token
-  //     }
-  //     req.user = decoded;
-  //     next();
-  //   });
-  // };
   
   
   // ✅ JWT Issuer Endpoint
@@ -100,7 +85,6 @@ app.use(
 // Routes
 app.use("/api", booked)
 app.use("/api/auth", authRoutes);
-app.use("/api", User);
 app.use("/api", Post)
 app.use("/api", Doctor)
 app.use("/api", Notification)
@@ -108,6 +92,7 @@ app.use("/api", Ai)
 app.use("/api",verifyToken, Payment)
 app.use("/api", contact)
 app.use("/api",verifyToken, schedule)
+app.use("/api",verifyToken, User);
 
 
 
