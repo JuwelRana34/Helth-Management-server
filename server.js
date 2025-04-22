@@ -1,7 +1,6 @@
 require("dotenv").config();
 const express = require("express");
- const {runScheduleJob } =require('./src/utils/scheduleCron');
-const http = require("http");
+const {runScheduleJob } =require('./src/utils/scheduleCron');
 const cors = require("cors");
 const connectDB  = require("./src/config/db");
 const authRoutes = require("./src/routes/auth.routes");
@@ -11,7 +10,6 @@ const Doctor = require("./src/routes/doctors.routes")
 const Notification = require("./src/routes/notification.routes");
 const Ai = require("./src/routes/ai.routes");
 const Payment = require("./src/routes/payments.routes");
-const initializeSocket = require("./src/utils/socket");
 const contact = require('./src/routes/contact.routes');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser')
@@ -21,10 +19,6 @@ const booked = require('./src/routes/bookedDoctor.route')
 
 
 const app = express();
-const server = http.createServer(app);
-// Initialize Socket.io
-initializeSocket(server);
-
 connectDB ();
 // Middleware
 // ✅ CORS CONFIG - Allow cookies to be sent
@@ -38,9 +32,6 @@ app.use(
     })
   );
 
-  app.get('/api/wake-up', (req, res) => {
-    res.status(200).send('Server is awake!');
-  });
   app.get("/api/auto-cron", async(req , res)=>{
    await runScheduleJob()
    res.send("success")
@@ -101,4 +92,4 @@ app.use("/api",verifyToken, User);
 
 // Server Start
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
