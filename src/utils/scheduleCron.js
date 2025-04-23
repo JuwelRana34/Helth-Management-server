@@ -1,5 +1,4 @@
 const { CronJob } = require('cron');
-const fetch = require("node-fetch");
 const moment = require('moment');
 const Doctor = require('../models/doctor.model');
 const Schedule = require('../models/Schedule.model');
@@ -14,22 +13,27 @@ const timeSlots = [
 const runScheduleJob = async () => {
   try {
     const today = moment().startOf('day');
-
-    try {
-      await fetch("https://helth-management-server.onrender.com/api/wake-up");
-      console.log("Server is awake.");
-    } catch (error) {
-      console.error("Error waking up the server:", error);
-    }
+    // -----------------new -------------------
+    const fromDate = moment(today).subtract(7, 'days').format('YYYY-MM-DD');
+    const toDate = moment(today).add(7, 'days').format('YYYY-MM-DD');
+  // ----------------new end -------------------
 
     // Delete past schedules
-    await Schedule.deleteMany({ date: { $lt: today.format('YYYY-MM-DD') } });
+    // await Schedule.deleteMany({ date: { $lt: today.format('YYYY-MM-DD') } });
+
+    await Schedule.deleteMany({
+      $or: [
+        { date: { $lt: fromDate } },
+        { date: { $gt: toDate } }
+      ]
+    });
 
     const doctors = await Doctor.find();
 
-    for (let day = 0; day <= 7; day++) {
+    // for (let day = 0; day <= 7; day++) {
+    for (let day = -2; day <= 7; day++) {
       const targetDate = moment(today).add(day, 'days').format('YYYY-MM-DD');
-
+      
       for (const doctor of doctors) {
         const exists = await Schedule.findOne({
           doctorId: doctor._id,
