@@ -9,6 +9,7 @@ const UserSchema = new mongoose.Schema(
     subscriptions: { type: Date,},
     ticket:{type:Number , default:0},
     subscriptionPlan: { type: String, default: "" , enum: ["basic", "premium", "family"] },
+    status: { type: String, default: null },
   },
   { timestamps: true }
 );
