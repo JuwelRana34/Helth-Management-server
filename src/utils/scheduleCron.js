@@ -66,7 +66,7 @@ const runScheduleJob = async () => {
 
   try {
     const today = moment().startOf('day');
-    const fromDate = moment(today).subtract(7, 'days').format('YYYY-MM-DD');
+    const fromDate = moment(today).subtract(1, 'days').format('YYYY-MM-DD');
     const toDate = moment(today).add(7, 'days').format('YYYY-MM-DD');
 
     await Schedule.deleteMany({
