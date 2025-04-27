@@ -9,7 +9,6 @@ exports.Ai = async function (req, res) {
       baseURL,
     });
   
-  //   deepseek
 
   const response = await  await api.chat.completions.create({
     model: "mistralai/Mistral-7B-Instruct-v0.2",
