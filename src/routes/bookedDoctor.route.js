@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Controller
+
 const { addBooked,getBooked } = require('../controllers/bookedDoctor.controller');
 
 router.post('/booked-doctor', addBooked);
