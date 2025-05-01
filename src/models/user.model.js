@@ -8,7 +8,7 @@ const UserSchema = new mongoose.Schema(
     role: { type: String, default: "patient" ,enum:["patient","admin", "doctor"] },
     subscriptions: { type: Date,},
     ticket:{type:Number , default:0},
-    subscriptionPlan: { type: String, default: "" , enum: ["basic", "premium", "family"] },
+    subscriptionPlan: { type: String, default: null , enum: ["basic", "premium", "family", null] },
     status: { type: String, default: null },
   },
   { timestamps: true }

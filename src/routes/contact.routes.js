@@ -5,6 +5,6 @@
 
  router.post('/contact', Contact)
  router.get('/contact', GetContact)
- router.delete('/contactDelete/:id', DeleteContact)
+ router.post('/contactDelete/:id', DeleteContact)
 
  module.exports = router
